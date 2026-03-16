@@ -93,4 +93,4 @@ snpEff -c $SNPEFF_DIR/snpEff.config -stats $SNPEFF_DIR/snpEff.html reference_db 
 echo Annotated variants with snpEff!
 
 echo Pipeline completed successfully! Check the folders in $RESULTS_FOLDER for output files.
-tree
+#tree
