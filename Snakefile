@@ -15,6 +15,7 @@ rule all:
         f"{SNAKEMAKE_DIR}/dirs_created",
         f"{RAW_DIR}/{SRA}.fastq",
         f"{QC_DIR}/{SRA}_fastqc.html",
+        f"{RAW_DIR}/reference.fasta.fai",
     
 rule create_dirs:
     output:
@@ -60,4 +61,14 @@ rule run_fastqc:
     shell:
         """
         fastqc -o {QC_DIR} {RAW_DIR}/{SRA}.fastq
+        """
+
+rule index_reference:
+    input:
+        f"{RAW_DIR}/reference.fasta"
+    output:
+        f"{RAW_DIR}/reference.fasta.fai"
+    shell:
+        """
+        samtools faidx {RAW_DIR}/reference.fasta
         """
