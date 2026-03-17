@@ -21,6 +21,7 @@ rule all:
         f"{ALIGNED_DIR}/aligned.sam",
         f"{ALIGNED_DIR}/aligned.sorted.bam",
         f"{ALIGNED_DIR}/dedup.bam",
+        f"{ALIGNED_DIR}/dedup.bam.bai",
     
 rule create_dirs:
     output:
@@ -137,4 +138,14 @@ rule mark_duplicates:
     shell:
         """
         gatk MarkDuplicates -I {ALIGNED_DIR}/aligned.sorted.bam -O {ALIGNED_DIR}/dedup.bam -M {ALIGNED_DIR}/dup_metrics.txt
+        """
+
+rule index_dedup:
+    input:
+        f"{ALIGNED_DIR}/dedup.bam"
+    output:
+        f"{ALIGNED_DIR}/dedup.bam.bai"
+    shell:
+        """
+        samtools index {ALIGNED_DIR}/dedup.bam
         """
