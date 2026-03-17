@@ -18,6 +18,7 @@ rule all:
         f"{RAW_DIR}/reference.fasta.fai",
         f"{RAW_DIR}/reference.fasta.amb",
         f"{RAW_DIR}/reference.dict",
+        f"{ALIGNED_DIR}/aligned.sam",
     
 rule create_dirs:
     output:
@@ -98,3 +99,20 @@ rule fasta_dictionary:
         """
         gatk CreateSequenceDictionary -R {RAW_DIR}/reference.fasta -O {RAW_DIR}/reference.dict
         """
+
+rule align_reads:
+    input:
+        f"{RAW_DIR}/reference.fasta",
+        f"{RAW_DIR}/{SRA}.fastq",
+        f"{RAW_DIR}/reference.fasta.amb",
+        f"{RAW_DIR}/reference.fasta.ann",
+        f"{RAW_DIR}/reference.fasta.bwt",
+        f"{RAW_DIR}/reference.fasta.pac",
+        f"{RAW_DIR}/reference.fasta.sa"
+    output:
+        f"{ALIGNED_DIR}/aligned.sam"
+    shell:
+        """
+        bwa mem -R '@RG\\tID:1\\tLB:lib1\\tPL:illumina\\tPU:unit1\\tSM:sample1' {RAW_DIR}/reference.fasta {RAW_DIR}/{SRA}.fastq > {ALIGNED_DIR}/aligned.sam
+        """
+
