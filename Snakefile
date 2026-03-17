@@ -16,6 +16,7 @@ rule all:
         f"{RAW_DIR}/{SRA}.fastq",
         f"{QC_DIR}/{SRA}_fastqc.html",
         f"{RAW_DIR}/reference.fasta.fai",
+        f"{RAW_DIR}/reference.fasta.amb",
     
 rule create_dirs:
     output:
@@ -71,4 +72,18 @@ rule index_reference:
     shell:
         """
         samtools faidx {RAW_DIR}/reference.fasta
+        """
+
+rule build_bwa:
+    input:
+        f"{RAW_DIR}/reference.fasta"
+    output:
+        f"{RAW_DIR}/reference.fasta.amb",
+        f"{RAW_DIR}/reference.fasta.ann",
+        f"{RAW_DIR}/reference.fasta.bwt",
+        f"{RAW_DIR}/reference.fasta.pac",
+        f"{RAW_DIR}/reference.fasta.sa"
+    shell:
+        """
+        bwa index {RAW_DIR}/reference.fasta
         """
