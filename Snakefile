@@ -14,6 +14,7 @@ rule all:
     input:
         f"{SNAKEMAKE_DIR}/dirs_created",
         f"{RAW_DIR}/{SRA}.fastq",
+        f"{QC_DIR}/{SRA}_fastqc.html",
     
 rule create_dirs:
     output:
@@ -34,7 +35,7 @@ rule download_fasta:
 
     shell:
         """
-        efetch -db nucleotide -id $REF_ID -format fasta > $RAW_DIR/reference.fasta
+        efetch -db nucleotide -id {REF_ID} -format fasta > {RAW_DIR}/reference.fasta
         """
 
 rule download_sequencing:
@@ -48,4 +49,15 @@ rule download_sequencing:
         """
         prefetch {SRA} -O {RAW_DIR}
         fastq-dump -X 10000 {RAW_DIR}/{SRA}/{SRA}.sra -O {RAW_DIR}
+        """
+
+rule run_fastqc:
+    input:
+        f"{RAW_DIR}/{SRA}.fastq"
+    output:
+        f"{QC_DIR}/{SRA}_fastqc.html",
+        f"{QC_DIR}/{SRA}_fastqc.zip"
+    shell:
+        """
+        fastqc -o {QC_DIR} {RAW_DIR}/{SRA}.fastq
         """
