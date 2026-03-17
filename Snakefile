@@ -20,6 +20,7 @@ rule all:
         f"{RAW_DIR}/reference.dict",
         f"{ALIGNED_DIR}/aligned.sam",
         f"{ALIGNED_DIR}/aligned.sorted.bam",
+        f"{ALIGNED_DIR}/dedup.bam",
     
 rule create_dirs:
     output:
@@ -125,4 +126,15 @@ rule convert_sam:
     shell:
         """
         samtools view -b {ALIGNED_DIR}/aligned.sam | samtools sort -o {ALIGNED_DIR}/aligned.sorted.bam
+        """
+
+rule mark_duplicates:
+    input:
+        f"{ALIGNED_DIR}/aligned.sorted.bam"
+    output:
+        f"{ALIGNED_DIR}/dedup.bam",
+        f"{ALIGNED_DIR}/dup_metrics.txt"
+    shell:
+        """
+        gatk MarkDuplicates -I {ALIGNED_DIR}/aligned.sorted.bam -O {ALIGNED_DIR}/dedup.bam -M {ALIGNED_DIR}/dup_metrics.txt
         """
