@@ -12,7 +12,8 @@ SNAKEMAKE_DIR=f"{RESULTS_FOLDER}/snakemake"
 
 rule all:
     input:
-        f"{SNAKEMAKE_DIR}/dirs_created"
+        f"{SNAKEMAKE_DIR}/dirs_created",
+        f"{RAW_DIR}/{SRA}.fastq",
     
 rule create_dirs:
     output:
@@ -34,4 +35,17 @@ rule download_fasta:
     shell:
         """
         efetch -db nucleotide -id $REF_ID -format fasta > $RAW_DIR/reference.fasta
+        """
+
+rule download_sequencing:
+    input:
+        f"{SNAKEMAKE_DIR}/dirs_created"
+
+    output:
+        f"{RAW_DIR}/{SRA}.fastq"
+
+    shell:
+        """
+        prefetch {SRA} -O {RAW_DIR}
+        fastq-dump -X 10000 {RAW_DIR}/{SRA}/{SRA}.sra -O {RAW_DIR}
         """
