@@ -27,6 +27,7 @@ rule all:
         f"{SNPEFF_DATA_DIR}/genes.gbk",
         f"{SNPEFF_DIR}/snpEff.config",
         f"{SNPEFF_DATA_DIR}/snpEffectPredictor.bin",
+        f"{SNPEFF_DIR}/snpEff_reference_db.txt",
     
 rule create_dirs:
     output:
@@ -215,4 +216,14 @@ rule snpeff_database:
     shell:
         """
         snpEff build -c {SNPEFF_DIR}/snpEff.config -genbank -v -noCheckProtein reference_db
+        """
+
+rule export_snpeff_database:
+    input:
+        f"{SNPEFF_DIR}/snpEff.config"
+    output:
+        f"{SNPEFF_DIR}/snpEff_reference_db.txt"
+    shell:
+        """
+        snpEff dump -c {SNPEFF_DIR}/snpEff.config reference_db > {SNPEFF_DIR}/snpEff_reference_db.txt
         """
