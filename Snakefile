@@ -12,13 +12,7 @@ SNAKEMAKE_DIR=f"{RESULTS_FOLDER}/snakemake"
 
 rule all:
     input:
-        f"{SNAKEMAKE_DIR}/dirs_created",
-        f"{RAW_DIR}",
-        f"{ALIGNED_DIR}",
-        f"{VARIANT_DIR}",
-        f"{ANNOTATED_DIR}",
-        f"{QC_DIR}",
-        f"{SNPEFF_DATA_DIR}",
+        f"{SNAKEMAKE_DIR}/dirs_created"
     
 rule create_dirs:
     output:
@@ -26,8 +20,18 @@ rule create_dirs:
 
     shell:
         """
-        mkdir -p {SNAKEMAKE_DIR} {RAW_DIR} {ALIGNED_DIR} {VARIANT_DIR} {ANNOTATED_DIR} {QC_DIR} {SNPEFF_DATA_DIR}
+        mkdir -p {RESULTS_FOLDER} {SNAKEMAKE_DIR} {RAW_DIR} {ALIGNED_DIR} {VARIANT_DIR} {ANNOTATED_DIR} {QC_DIR} {SNPEFF_DATA_DIR}
         touch {SNAKEMAKE_DIR}/dirs_created
         """
 
+rule download_fasta:
+    input:
+        f"{SNAKEMAKE_DIR}/dirs_created"
 
+    output:
+        f"{RAW_DIR}/reference.fasta"
+
+    shell:
+        """
+        efetch -db nucleotide -id $REF_ID -format fasta > $RAW_DIR/reference.fasta
+        """
