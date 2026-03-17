@@ -22,6 +22,7 @@ rule all:
         f"{ALIGNED_DIR}/aligned.sorted.bam",
         f"{ALIGNED_DIR}/dedup.bam",
         f"{ALIGNED_DIR}/dedup.bam.bai",
+        f"{VARIANT_DIR}/raw_variants.vcf",
     
 rule create_dirs:
     output:
@@ -148,4 +149,16 @@ rule index_dedup:
     shell:
         """
         samtools index {ALIGNED_DIR}/dedup.bam
+        """
+
+rule call_variants:
+    input:
+        f"{RAW_DIR}/reference.fasta",
+        f"{ALIGNED_DIR}/dedup.bam"
+    output:
+        f"{VARIANT_DIR}/raw_variants.vcf",
+        f"{VARIANT_DIR}/raw_variants.vcf.idx"
+    shell:
+        """
+        gatk HaplotypeCaller -R {RAW_DIR}/reference.fasta -I {ALIGNED_DIR}/dedup.bam -O {VARIANT_DIR}/raw_variants.vcf
         """
