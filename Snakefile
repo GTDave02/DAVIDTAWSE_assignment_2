@@ -23,6 +23,7 @@ rule all:
         f"{ALIGNED_DIR}/dedup.bam",
         f"{ALIGNED_DIR}/dedup.bam.bai",
         f"{VARIANT_DIR}/raw_variants.vcf",
+        f"{VARIANT_DIR}/filtered_variants.vcf",
     
 rule create_dirs:
     output:
@@ -161,4 +162,15 @@ rule call_variants:
     shell:
         """
         gatk HaplotypeCaller -R {RAW_DIR}/reference.fasta -I {ALIGNED_DIR}/dedup.bam -O {VARIANT_DIR}/raw_variants.vcf
+        """
+
+rule filter_variants:
+    input:
+        f"{RAW_DIR}/reference.fasta",
+        f"{VARIANT_DIR}/raw_variants.vcf"
+    output:
+        f"{VARIANT_DIR}/filtered_variants.vcf"
+    shell:
+        """
+        gatk VariantFiltration -R {RAW_DIR}/reference.fasta -V {VARIANT_DIR}/raw_variants.vcf -O {VARIANT_DIR}/filtered_variants.vcf --filter-expression "QD < 2.0 || FS > 60.0" --filter-name FILTER
         """
