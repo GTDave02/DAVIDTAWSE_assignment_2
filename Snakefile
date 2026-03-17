@@ -19,6 +19,7 @@ rule all:
         f"{RAW_DIR}/reference.fasta.amb",
         f"{RAW_DIR}/reference.dict",
         f"{ALIGNED_DIR}/aligned.sam",
+        f"{ALIGNED_DIR}/aligned.sorted.bam",
     
 rule create_dirs:
     output:
@@ -116,3 +117,12 @@ rule align_reads:
         bwa mem -R '@RG\\tID:1\\tLB:lib1\\tPL:illumina\\tPU:unit1\\tSM:sample1' {RAW_DIR}/reference.fasta {RAW_DIR}/{SRA}.fastq > {ALIGNED_DIR}/aligned.sam
         """
 
+rule convert_sam:
+    input:
+        f"{ALIGNED_DIR}/aligned.sam"
+    output:
+        f"{ALIGNED_DIR}/aligned.sorted.bam"
+    shell:
+        """
+        samtools view -b {ALIGNED_DIR}/aligned.sam | samtools sort -o {ALIGNED_DIR}/aligned.sorted.bam
+        """
