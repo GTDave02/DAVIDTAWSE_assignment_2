@@ -25,7 +25,8 @@ rule all:
         f"{VARIANT_DIR}/raw_variants.vcf",
         f"{VARIANT_DIR}/filtered_variants.vcf",
         f"{SNPEFF_DATA_DIR}/genes.gbk",
-        f"{SNPEFF_DIR}/snpEFF.config",
+        f"{SNPEFF_DIR}/snpEff.config",
+        f"{SNPEFF_DATA_DIR}/snpEffectPredictor.bin",
     
 rule create_dirs:
     output:
@@ -189,16 +190,29 @@ rule download_genbank:
 
 rule snpeff_config:
     input:
-        f"{RAW_DIR}/reference.fasta",
-        f"{SNPEFF_DATA_DIR}/genes.gbk"
+        fasta=f"{RAW_DIR}/reference.fasta",
+        gbk=f"{SNPEFF_DATA_DIR}/genes.gbk"
+
     output:
-        f"{SNPEFF_DIR}/snpEFF.config"
+        f"{SNPEFF_DIR}/snpEff.config"
+
     shell:
         """
-cat <<EOF > {SNPEFF_DIR}/snpEff.config
-# Custom snpEff config for reference_db
-reference_db.genome : reference_db
-reference_db.fa : $(readlink -f {RAW_DIR}/reference.fasta)
-reference_db.genbank : $(readlink -f {SNPEFF_DATA_DIR}/genes.gbk)
-EOF
+        echo Creating custom snpEff configuration file...
+        cat <<EOF > {SNPEFF_DIR}/snpEff.config
+        # Custom snpEff config for reference_db
+        reference_db.genome : reference_db
+        reference_db.fa : $(readlink -f {RAW_DIR}/reference.fasta)
+        reference_db.genbank : $(readlink -f {SNPEFF_DATA_DIR}/genes.gbk)
+        EOF
+        """
+
+rule snpeff_database:
+    input:
+        f"{SNPEFF_DIR}/snpEff.config"
+    output:
+        f"{SNPEFF_DATA_DIR}/snpEffectPredictor.bin"
+    shell:
+        """
+        snpEff build -c {SNPEFF_DIR}/snpEff.config -genbank -v -noCheckProtein reference_db
         """
