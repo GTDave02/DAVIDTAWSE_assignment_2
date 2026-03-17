@@ -24,6 +24,7 @@ rule all:
         f"{ALIGNED_DIR}/dedup.bam.bai",
         f"{VARIANT_DIR}/raw_variants.vcf",
         f"{VARIANT_DIR}/filtered_variants.vcf",
+        f"{SNPEFF_DATA_DIR}/genes.gbk",
     
 rule create_dirs:
     output:
@@ -174,3 +175,14 @@ rule filter_variants:
         """
         gatk VariantFiltration -R {RAW_DIR}/reference.fasta -V {VARIANT_DIR}/raw_variants.vcf -O {VARIANT_DIR}/filtered_variants.vcf --filter-expression "QD < 2.0 || FS > 60.0" --filter-name FILTER
         """
+
+rule download_genbank:
+    input:
+        f"{SNAKEMAKE_DIR}/dirs_created"
+    output:
+        f"{SNPEFF_DATA_DIR}/genes.gbk"
+    shell:
+        """
+        efetch -db nucleotide -id {REF_ID} -format genbank > {SNPEFF_DATA_DIR}/genes.gbk
+        """
+
