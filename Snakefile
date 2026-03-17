@@ -17,6 +17,7 @@ rule all:
         f"{QC_DIR}/{SRA}_fastqc.html",
         f"{RAW_DIR}/reference.fasta.fai",
         f"{RAW_DIR}/reference.fasta.amb",
+        f"{RAW_DIR}/reference.dict",
     
 rule create_dirs:
     output:
@@ -86,4 +87,14 @@ rule build_bwa:
     shell:
         """
         bwa index {RAW_DIR}/reference.fasta
+        """
+
+rule fasta_dictionary:
+    input:
+        f"{RAW_DIR}/reference.fasta"
+    output:
+        f"{RAW_DIR}/reference.dict"
+    shell:
+        """
+        gatk CreateSequenceDictionary -R {RAW_DIR}/reference.fasta -O {RAW_DIR}/reference.dict
         """
