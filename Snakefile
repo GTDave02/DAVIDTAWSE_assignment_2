@@ -26,8 +26,9 @@ rule all:
         f"{VARIANT_DIR}/filtered_variants.vcf",
         f"{SNPEFF_DATA_DIR}/genes.gbk",
         f"{SNPEFF_DIR}/snpEff.config",
-        f"{SNPEFF_DATA_DIR}/snpEffectPredictor.bin",
+        f"{SNPEFF_DIR}/snpeff_build.done",
         f"{SNPEFF_DIR}/snpEff_reference_db.txt",
+        f"{ANNOTATED_DIR}/annotated_variants.vcf"
     
 rule create_dirs:
     output:
@@ -212,18 +213,32 @@ rule snpeff_database:
     input:
         f"{SNPEFF_DIR}/snpEff.config"
     output:
-        f"{SNPEFF_DATA_DIR}/snpEffectPredictor.bin"
+        f"{SNPEFF_DIR}/snpeff_build.done"
     shell:
         """
         snpEff build -c {SNPEFF_DIR}/snpEff.config -genbank -v -noCheckProtein reference_db
+        touch {SNPEFF_DIR}/snpeff_build.done
         """
 
 rule export_snpeff_database:
     input:
-        f"{SNPEFF_DIR}/snpEff.config"
+        f"{SNPEFF_DIR}/snpEff.config",
+        f"{SNPEFF_DIR}/snpeff_build.done"
     output:
         f"{SNPEFF_DIR}/snpEff_reference_db.txt"
     shell:
         """
         snpEff dump -c {SNPEFF_DIR}/snpEff.config reference_db > {SNPEFF_DIR}/snpEff_reference_db.txt
+        """
+
+rule annotate_variants:
+    input:
+        f"{SNPEFF_DIR}/snpEff.config",
+        f"{SNPEFF_DIR}/snpeff_build.done",
+        f"{VARIANT_DIR}/filtered_variants.vcf"
+    output:
+        f"{ANNOTATED_DIR}/annotated_variants.vcf"
+    shell:
+        """
+        snpEff -c {SNPEFF_DIR}/snpEff.config -stats {SNPEFF_DIR}/snpEff.html reference_db {VARIANT_DIR}/filtered_variants.vcf > {ANNOTATED_DIR}/annotated_variants.vcf
         """
