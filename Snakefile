@@ -9,6 +9,8 @@ QC_DIR=f"{RESULTS_FOLDER}/qc"
 SNPEFF_DIR=f"{RESULTS_FOLDER}/snpEff"
 SNPEFF_DATA_DIR=f"{SNPEFF_DIR}/data/reference_db"
 SNAKEMAKE_DIR=f"{RESULTS_FOLDER}/snakemake"
+BUCKET="davidtawse-assignment-2"
+S3_PREFIX="ebola"
 
 rule all:
     input:
@@ -28,7 +30,8 @@ rule all:
         f"{SNPEFF_DIR}/snpEff.config",
         f"{SNPEFF_DIR}/snpeff_build.done",
         f"{SNPEFF_DIR}/snpEff_reference_db.txt",
-        f"{ANNOTATED_DIR}/annotated_variants.vcf"
+        f"{ANNOTATED_DIR}/annotated_variants.vcf",
+        f"{SNAKEMAKE_DIR}/s3_upload"
     
 rule create_dirs:
     output:
@@ -241,4 +244,37 @@ rule annotate_variants:
     shell:
         """
         snpEff -c {SNPEFF_DIR}/snpEff.config -stats {SNPEFF_DIR}/snpEff.html reference_db {VARIANT_DIR}/filtered_variants.vcf > {ANNOTATED_DIR}/annotated_variants.vcf
+        """
+
+rule s3_upload:
+    input:
+        f"{SNAKEMAKE_DIR}/dirs_created",
+        f"{RAW_DIR}/reference.fasta",
+        f"{RAW_DIR}/{SRA}.fastq",
+        f"{QC_DIR}/{SRA}_fastqc.html",
+        f"{RAW_DIR}/reference.fasta.fai",
+        f"{RAW_DIR}/reference.fasta.amb",
+        f"{RAW_DIR}/reference.fasta.ann",
+        f"{RAW_DIR}/reference.fasta.bwt",
+        f"{RAW_DIR}/reference.fasta.pac",
+        f"{RAW_DIR}/reference.fasta.sa",
+        f"{RAW_DIR}/reference.dict",
+        f"{ALIGNED_DIR}/aligned.sam",
+        f"{ALIGNED_DIR}/aligned.sorted.bam",
+        f"{ALIGNED_DIR}/dedup.bam",
+        f"{ALIGNED_DIR}/dup_metrics.txt",
+        f"{ALIGNED_DIR}/dedup.bam.bai",
+        f"{VARIANT_DIR}/raw_variants.vcf",
+        f"{VARIANT_DIR}/filtered_variants.vcf",
+        f"{SNPEFF_DATA_DIR}/genes.gbk",
+        f"{SNPEFF_DIR}/snpEff.config",
+        f"{SNPEFF_DIR}/snpeff_build.done",
+        f"{SNPEFF_DIR}/snpEff_reference_db.txt",
+        f"{ANNOTATED_DIR}/annotated_variants.vcf",
+    output:
+        f"{SNAKEMAKE_DIR}/s3_upload"
+    shell:
+        """
+        aws s3 cp results s3://davidtawse-assignment-2 --recursive
+        touch {SNAKEMAKE_DIR}/s3_upload
         """
